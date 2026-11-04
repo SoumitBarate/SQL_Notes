@@ -41,7 +41,7 @@ SQL_Notes/
 ├── scripts/
 │   ├── mysql/  practice tables and demos for MySQL
 │   └── oracle/ practice scripts for Oracle
-└── slides/     original course slides (.ppt)
+└── slides/     original course slides (.ppt / .pptx)
 ```
 
 ## Where SQL fits in a data engineering workflow
@@ -64,4 +64,4 @@ SQL is used at both ends: to **extract** from source databases and to **query** 
 
 ## Sources
 
-Course slides (Day1, SQL1, SQL2) and my own practice scripts, rewritten in my own words.
+Course slides (Day1, SQL1, SQL2, Joins Exercise, Window Functions) and my own practice scripts, rewritten in my own words.

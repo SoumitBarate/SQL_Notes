@@ -1,0 +1,213 @@
+select * from emp;
+
+
+select deptno, avg(sal)  from emp group by deptno;
+Here, the results are produced in a single row per depat. Here the group are dept 10,20,30.
+
+Window functions perform aggregrate operations of group of rows, but they produce a result FOR each row.
+
+
+select empno, deptno, sal, avg(sal) Over(Partition by deptno) as dept_avg 
+from emp;
+
+select empno, deptno, sal, avg(sal) Over()  
+from emp;
+
+OVER() clause constructs a window. When it's empty, the window will include all records.
+
+OVER(Partition by ) ---is used to form rows into group of row.
+
+select empno, deptno, sal, 
+avg(sal) Over(Partition by deptno) as avg_sal ,
+min(sal) Over(Partition by deptno) as minsal ,
+max(sal) Over(Partition by deptno) as maxsal 
+from emp;
+
+select deptno, 
+avg(sal) as avg_sal ,
+min(sal) as minsal ,
+max(sal) as maxsal
+from emp
+group by deptno;
+
+windows fun give same data but along side the row.
+
+OVER(ORDER BY sal desc) - Use order by inside the over() clause to re-order rows within each window.
+
+select empno, deptno, sal, 
+avg(sal) Over(Partition by deptno) as avg_sal ,
+min(sal) Over(Partition by deptno) as minsal ,
+max(sal) Over(Partition by deptno) as maxsal,
+Rank() Over( order by sal desc) as dept_rank
+from emp;
+
+select empno, deptno, sal, 
+Rank() Over( Partition by deptno order by sal desc) as dept_rank
+from emp;
+
+select empno, deptno, sal, 
+Rank() Over( Partition by deptno order by sal desc) as dept_rank
+from emp;
+
+Window functions in MySQL
+
+Window functions allow you to perform calculations across a set of rows that are related to the current row within a result set. They are useful for running totals, ranking, and moving averages.
+Window functions:
+1. ROW_NUMBER(): Assigns a unique row number to each row in the result set.
+2. RANK(): Assigns a rank to each row, with gaps for ties.
+3. DENSE_RANK(): Similar to RANK(), but without gaps for ties.
+4. SUM(): Computes the sum of values over a specified window.
+5. AVG(): Computes the average value over a specified window.
+
+A window function performs a calculation across a set of rows that are related to the current row.
+Aggregate functions (SUM, AVG, COUNT, etc.) usually aggregate rows into one result.
+Window functions keep the individual rows but add an extra "calculated value" alongside them.
+
+
+1. Display employee details along with the total number of employees.
+SELECT emp_id, name, department,
+       COUNT(*) OVER() AS total_employees
+FROM Employees;
+
+2. Show each employee’s salary along with the average salary of all employees.
+SELECT ename, sal,
+       AVG(sal) OVER() AS avg_salary
+FROM emp;
+
+3. Display employee salary along with the maximum salary in the company.
+SELECT ename, sal,
+       max(sal) OVER() AS max_salary
+FROM emp;
+
+4. Show each employee’s salary and total salary of all employees.
+SELECT ename, sal,
+       sum(sal) OVER() AS total_salary
+FROM emp;
+
+5. Display employee salaries and average salary per department.
+SELECT ename, deptno, sal,
+       avg(sal) OVER(partition by deptno) AS dept_avg_salary
+FROM emp;
+
+6. Rank employees based on salary.
+SELECT name, salary,
+       RANK() OVER(ORDER BY salary DESC) AS salary_rank
+FROM Employees;
+
+6a.
+find the emp with second highest sal
+select * from 
+(SELECT ename, deptno, sal,
+       rank() OVER(order by sal desc) AS sal_rank
+FROM emp) a
+where sal_rank=2;
+
+6b. find the emp least sal
+select * from 
+(SELECT ename, deptno, sal,
+       rank() OVER(order by sal ) AS sal_rank
+FROM emp) a
+where sal_rank=1;
+
+
+7. Assign dense ranks based on salary.
+select empno, deptno,sal, dense_rank() OVER(order by sal) as rank_table from emp;
+
+8. Number employees within each department.
+SELECT ename, deptno,
+       ROW_NUMBER() OVER(PARTITION BY deptno ORDER BY salary DESC) AS row_num
+FROM emp;
+
+9. Find the highest paid employee in each department.
+SELECT *
+FROM (
+      SELECT ename, deptno, sal,
+             ROW_NUMBER() OVER(PARTITION BY deptno ORDER BY sal DESC) AS rn
+      FROM emp
+     ) t
+WHERE rn = 1;
+
+10. Show the top 3 highest-paid employees in each department.
+SELECT *
+FROM (
+      SELECT name, department, salary,
+             ROW_NUMBER() OVER(PARTITION BY department ORDER BY salary DESC) AS rn
+      FROM Employees
+     ) t
+WHERE rn <= 3;
+
+
+-------------------------------------------------------------
+
+11. Show the previous employee salary.
+SELECT ename, sal,
+       LAG(sal) OVER(ORDER BY sal ) AS previous_salary
+FROM emp;
+
+12. Show the next employee salary.
+SELECT ename, sal,
+       lead(sal) OVER(ORDER BY sal ) AS previous_salary
+FROM emp;
+
+13. Find salary difference from the previous employee.
+SELECT ename, sal,
+      sal - lag(sal) OVER(ORDER BY sal ) AS previous_salary
+FROM emp;
+
+14. Show cumulative salary ordered by hire date.
+SELECT ename, hiredate, sal,
+       SUM(sal) OVER(ORDER BY hiredate) AS running_total
+FROM emp;
+
+15. Calculate cumulative salary within each department.
+SELECT ename,deptno, sal,
+      sum(sal) OVER(PARTITION BY deptno ORDER BY sal ) AS cummulative_salary
+FROM emp;
+
+16. Find employees earning above department average salary.
+SELECT *
+FROM (
+      SELECT ename, deptno, sal,
+             AVG(sal) OVER(PARTITION BY deptno) AS dept_avg
+      FROM emp
+     ) temp_table
+WHERE sal > dept_avg;
+
+--SELECT *
+FROM temp_table
+WHERE sal > dept_avg;
+
+17. Show salary difference from department average.
+SELECT ename, deptno, sal,
+       sal - AVG(sal) OVER(PARTITION BY deptno) AS diff_from_avg
+FROM emp;
+
+18. Find second highest salary in each department.
+SELECT *
+FROM (
+      SELECT name, department, salary,
+             DENSE_RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS rnk
+      FROM Employees
+     ) t
+WHERE rnk = 2;
+
+
+
+
+
+example of CASE
+1. Categorize employees based on salary. 
+SELECT ename, sal,
+       CASE 
+           WHEN sal > 2500 THEN 'High'
+           WHEN sal BETWEEN 1500 AND 2500 THEN 'Medium'
+           ELSE 'Low'
+       END AS salary_category
+FROM emp;
+
+
+CREATE VIEW emp_view AS
+SELECT empno, ename, sal
+FROM emp where deptno =10;
+
+drop view emp_view;
