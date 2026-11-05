@@ -1,0 +1,127 @@
+SET operators - MySQL
+
+SET OPERATORS - example
+
+create table t1(
+ id integer primary key,
+ loc varchar(15) not null);
+
+create table t2(
+ id integer primary key,
+ loc varchar(15) not null);
+
+create table t3(
+ loc varchar(15) not null);
+
+INSERT INTO t1 VALUES (1, 'MUMBAI');      
+INSERT INTO t1 VALUES (2, 'MUMBAI');      
+INSERT INTO t1 VALUES (3, 'MUMBAI');      
+INSERT INTO t1 VALUES (4, 'DELHI');   
+INSERT INTO t1 VALUES (5, 'DELHI');   
+INSERT INTO t1 VALUES (6, 'DELHI');   
+INSERT INTO t1 VALUES (7, 'BANGALORE');   
+INSERT INTO t1 VALUES (8, 'CHENNAI');  
+INSERT INTO t1 VALUES (9, 'CHENNAI');  
+INSERT INTO t1 VALUES (10, 'AHEMDABAD');
+
+INSERT INTO t2 VALUES (1, 'MUMBAI');      
+INSERT INTO t2 VALUES (2, 'MUMBAI');      
+INSERT INTO t2 VALUES (3, 'BANGALORE');   
+INSERT INTO t2 VALUES (4, 'BANGALORE');   
+INSERT INTO t2 VALUES (5, 'BANGALORE');   
+INSERT INTO t2 VALUES (6, 'BANGALORE');   
+INSERT INTO t2 VALUES (7, 'CHENNAI');  
+COMMIT;      
+
+select loc  from t1;  10 rows
+select loc  from t2;  7 rows
+
+SET Operators
+
+Operator	Purpose	Result
+UNION		Combines results and removes duplicates	s
+UNION ALL	Combines results and retains duplicates	
+INTERSECT	Returns common records	
+EXCEPT 		Returns records in first query but not second	
+
+1. UNION Operator
+Purpose: Combines the result sets of two SELECT queries and eliminates duplicate rows.
+Example 1: Display all locations from t1 and t2 without duplicates.
+
+SELECT loc FROM t1
+UNION
+SELECT loc FROM t2;
+
+Example 2: UNION with WHERE condition
+
+Display locations from both tables where the location is either MUMBAI or DELHI.
+SELECT loc FROM t1 WHERE loc = 'MUMBAI'
+UNION
+SELECT loc FROM t2 WHERE loc = 'DELHI';
+
+returns only MUMBAI because t2 has no DELHI records.
+
+2. UNION ALL Operator
+Purpose: Combines the result sets of two SELECT queries without eliminating duplicates.
+SELECT loc FROM t1
+UNION ALL
+SELECT loc FROM t2;
+
+Example 2: Compare UNION and UNION ALL
+How many number of rows returned??
+SELECT loc FROM t1
+UNION
+SELECT loc FROM t2;
+
+SELECT loc FROM t1
+UNION ALL
+SELECT loc FROM t2;
+
+3. INTERSECT Operator
+Purpose: Returns only those rows that are common to both SELECT queries.
+
+SELECT loc FROM t1
+INTERSECT
+SELECT loc FROM t2;
+
+Here, MUMBAI exists in both tables.
+BANGALORE exists in both tables.
+CHENNAI exists in both tables.
+DELHI and AHEMDABAD are not common to both tables.
+
+Example 2: INTERSECT using WHERE condition
+
+Find locations common to both tables, excluding MUMBAI.
+
+SELECT loc FROM t1
+WHERE loc <> 'MUMBAI'
+INTERSECT
+SELECT loc FROM t2
+WHERE loc <> 'MUMBAI';
+
+Also, below will also give same output
+
+SELECT DISTINCT t1.loc
+FROM t1
+WHERE EXISTS (
+    SELECT 1
+    FROM t2
+    WHERE t1.loc = t2.loc
+);
+
+4. EXCEPT Operator
+Purpose: Returns records present in the first SELECT query but not present in the second SELECT query.
+
+Example 1:
+
+Find locations present in t1 but not present in t2.
+SELECT loc FROM t1
+EXCEPT
+SELECT loc FROM t2;
+
+Example 2: Reverse the EXCEPT operation
+
+Find locations present in t2 but not present in t1.
+SELECT loc FROM t2
+EXCEPT
+SELECT loc FROM t1;
